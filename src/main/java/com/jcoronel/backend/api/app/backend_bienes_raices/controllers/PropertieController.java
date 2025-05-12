@@ -9,9 +9,10 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-//import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
+//import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 //import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,6 +25,8 @@ import com.jcoronel.backend.api.app.backend_bienes_raices.entities.Vendor;
 import com.jcoronel.backend.api.app.backend_bienes_raices.services.PropertieService;
 import com.jcoronel.backend.api.app.backend_bienes_raices.services.VendorService;
 import com.jcoronel.backend.api.app.backend_bienes_raices.storage.StorageService;
+
+import jakarta.validation.Valid;
 
 //import jakarta.validation.Valid;
 
@@ -50,36 +53,30 @@ public class PropertieController {
         return service.findAll();
     }
 
-    //@PreAuthorize("hasRole('ADMIN')")
     @PostMapping(consumes = "multipart/form-data")
-    public ResponseEntity<?> createPropertyImage(
-        @RequestParam("title") String title,
-        @RequestParam("price") Double price,
-        @RequestParam("image") MultipartFile image,
-        @RequestParam("description") String description,
-        @RequestParam("rooms") Integer rooms,
-        @RequestParam("bathrooms") Integer bathrooms,
-        @RequestParam("parking") Integer parking,
-        @RequestParam("date") LocalDate date,
-        @RequestParam("vendor_id") Long vendor_id
-    ){
-        Propertie propertieBD = new Propertie();
+    public ResponseEntity<?> createProperty(@Valid @ModelAttribute Propertie propertie, 
+                                            BindingResult result, @RequestParam("file") 
+                                            MultipartFile image){
+
+        if (image.isEmpty() || image == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Deberias enviar una imagen de la propiedad"));
+        } else {
+            propertie.setImage(image.getOriginalFilename());
+        }
+
+        if (result.hasFieldErrors() ) {
+            return validation(result);
+        }
+
+        Long vendor_id = propertie.getVendor().getId();
         Optional<Vendor> verdorOptional = vendorService.findById(vendor_id);
 
         storageService.store(image);
 
         if (verdorOptional.isPresent()) {
-            propertieBD.setTitle(title);
-            propertieBD.setPrice(price);
-            propertieBD.setImage(image.getOriginalFilename());
-            propertieBD.setDescription(description);
-            propertieBD.setRooms(rooms);
-            propertieBD.setBathrooms(bathrooms);
-            propertieBD.setParking(parking);
-            propertieBD.setDate(date);
-            propertieBD.setVendor(verdorOptional.get());
-
-            return ResponseEntity.status(HttpStatus.CREATED).body(service.save(propertieBD));
+            
+            propertie.setVendor(verdorOptional.get());
+            return ResponseEntity.status(HttpStatus.CREATED).body(service.save(propertie));
         }
 
         return ResponseEntity.badRequest().body(Map.of("error", "El vendedor con el id " + vendor_id + " no existe"));
@@ -88,10 +85,11 @@ public class PropertieController {
     private ResponseEntity<?> validation(BindingResult result) {
         Map<String, String> errors = new HashMap<>();
 
-        result.getFieldErrors().forEach(e -> {
-            errors.put(e.getField(), "El campo " + e.getField() + " " + e.getDefaultMessage());
+        result.getFieldErrors().forEach(err -> {
+            errors.put(err.getField(), "El campo " + err.getField() + " " + err.getDefaultMessage());
         });
 
+        //para retronar como error, con el estado 400 , que hah sido un error
         return ResponseEntity.badRequest().body(errors);
     }
 }

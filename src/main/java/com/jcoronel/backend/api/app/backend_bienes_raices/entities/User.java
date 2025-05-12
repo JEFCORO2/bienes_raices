@@ -3,6 +3,7 @@ package com.jcoronel.backend.api.app.backend_bienes_raices.entities;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.jcoronel.backend.api.app.backend_bienes_raices.validation.IsString;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -27,10 +28,12 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @IsString
     @Size(min = 2 , max = 20)
     @Column(name = "nombre")
     private String name;
 
+    @IsString
     @Size(min = 4 , max = 30)
     @Column(name = "apellido")
     private String lastname;

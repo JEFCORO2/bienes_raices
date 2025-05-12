@@ -12,7 +12,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 @Table(name = "propiedades")
@@ -23,7 +26,7 @@ public class Propertie {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @IsString
+    //@IsString
     @NotBlank
     @Size(min = 5 , max = 45)
     @Column(name = "titulo")
@@ -32,24 +35,38 @@ public class Propertie {
     @Column(name = "precio")
     private Double price;
 
+    //@IsString
+    //@NotBlank
     @Column(name = "imagen")
     private String image;
 
+    //@IsString
+    @NotBlank
     @Column(name = "descripcion")
     private String description;
 
+    @NotNull
+    @Min(1)
+    @Max(10)
     @Column(name = "habitaciones")
     private Integer rooms;
 
+    @NotNull
+    @Min(1)
+    @Max(10)
     @Column(name = "bano")
     private Integer bathrooms;
 
+    @NotNull
+    @Min(1)
+    @Max(10)
     @Column(name = "estacionamiento")
     private Integer parking;
    
     @Column(name = "creado")
     private LocalDate date;
 
+    @NotNull
     @ManyToOne
     @JoinColumn(name = "vendedor_id", referencedColumnName = "id")
     private Vendor vendor;
@@ -67,6 +84,10 @@ public class Propertie {
         this.parking = parking;
         this.date = date;
         this.vendor = vendor;
+    }
+
+    public void prePersist() {
+        date = LocalDate.now();
     }
 
     public Long getId() {
