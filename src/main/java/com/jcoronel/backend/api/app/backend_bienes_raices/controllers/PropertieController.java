@@ -1,6 +1,5 @@
 package com.jcoronel.backend.api.app.backend_bienes_raices.controllers;
 
-import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +12,7 @@ import org.springframework.validation.BindingResult;
 //import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 //import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -51,6 +51,16 @@ public class PropertieController {
     @GetMapping()
     public List<Propertie> findAll() {
         return service.findAll();
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> show(@PathVariable Long id){
+        Optional<Propertie> prOptional = service.findById(id);
+        
+        if (prOptional.isPresent()) {
+            return ResponseEntity.ok().body(prOptional.get());
+        }
+        return ResponseEntity.notFound().build();
     }
 
     @PostMapping(consumes = "multipart/form-data")

@@ -26,21 +26,22 @@ public class Propertie {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //@IsString
+    @IsString
     @NotBlank
     @Size(min = 5 , max = 45)
     @Column(name = "titulo")
     private String title;
 
+    @NotNull
     @Column(name = "precio")
     private Double price;
 
     //@IsString
-    //@NotBlank
+    @NotBlank
     @Column(name = "imagen")
     private String image;
 
-    //@IsString
+    @IsString
     @NotBlank
     @Column(name = "descripcion")
     private String description;
